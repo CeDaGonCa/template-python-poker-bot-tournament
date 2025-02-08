@@ -1,0 +1,44 @@
+
+
+
+number of players left / players that started the round : [0,1]
+opponent's bankroll stdev from average bankroll
+percentage of hands that beat my hand [0,1]
+pot / big blind
+my bank roll stdev from avg
+my position (last to play or first to play?) [0,1]
+each player's history of actions list of lists of floats between 0 and 1
+round (pre flop, flop, etc..) (one hot encoding)
+
+
+
+
+
+round
+
+
+PRE FLOP                                
+    state 1 
+        p1 check 
+        p2 check
+        you raise 100 
+        p4 call 100
+    state 2
+        p1 call 100
+        p2 fold
+        you check (no action allowed)
+        you check (no action allowed)
+FLOP
+    state 3
+        p1 check
+        p2 (already folded)
+        p3 all in
+        p4 all in
+    state 4
+        p1 fold
+        p2 (already folded)
+        you check (no action allowed)
+        p4 check (no action allowed)
+
+result : won 1.5x, lost =  - your bets / potential winning
+
