@@ -45,3 +45,5 @@ class TemplateBot(Bot):
 if __name__ == "__main__":
     bot = TemplateBot(args.host, args.port, args.room, args.username)
     asyncio.run(bot.start())
+
+# awdwda
