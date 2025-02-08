@@ -9,12 +9,16 @@ parser = argparse.ArgumentParser(
     prog='Template bot',
     description='A Turing Games poker bot that always checks or calls, no matter what the target bet is (it never folds and it never raises)')
 
-parser.add_argument('--port', type=int, default=1999,
+parser.add_argument('--port', type=int,
                     help='The port to connect to the server on')
 parser.add_argument('--host', type=str, default='localhost',
                     help='The host to connect to the server on')
 parser.add_argument('--room', type=str, default='my-new-room',
                     help='The room to connect to')
+parser.add_argument('--party', type=str, default='poker',
+                    help='The party to connect to')
+parser.add_argument('--key', type=str, default='',
+                    help='The key for authentication')
 
 args = parser.parse_args()
 
@@ -36,5 +40,5 @@ class TemplateBot(Bot):
         print('start game', my_id)
 
 if __name__ == "__main__":
-    bot = TemplateBot(args.host, args.port, args.room)
+    bot = TemplateBot(args.host, args.port, args.room, args.party, args.key)
     asyncio.run(bot.start())
