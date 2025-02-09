@@ -1,0 +1,92 @@
+
+# this is for a heads up model
+
+percentage of hands that beat my hand [0,1]
+pot
+my bank roll
+first to talk (boolean)
+round (pre flop, flop, etc..) (one hot encoding)
+vector of previous actions of opponent. example : [0,0,0.2,0.5,1]
+
+
+
+
+
+
+p1 (SB)
+
+
+state1:
+my_bankroll: 950
+hands that beat me: 0.3
+pot: 100
+round_type : pre flop
+first_to_talk : true
+action : 0.1 (perentage of my bankroll that I betted) = 95 => raise
+
+no state:
+no action allowed for me, because he called.
+
+state2:
+my_bankroll : 950
+hands that beat me: 0.25
+pot: 2000
+round_type : flop
+first_to_talk : false -> my action is a response to the opoonent's action, he went all in.
+action : 0 -> fold 
+
+
+
+
+
+
+
+
+
+# Sample data for pre-flop and flop states
+sample_data = [
+    # Pre-flop state 1
+    {
+        "state": {
+            "opponent_bankroll": 1000,  # Opponent's bankroll
+            "hands_that_beat_me": 0.3,  # 30% of hands beat my hand
+            "pot": 200,                 # Current pot size
+            "my_bankroll": 1500,        # My bankroll
+            "first_to_talk": 1,         # I am first to act (1 for True, 0 for False)
+            "round_type": [1, 0, 0, 0]  # Pre-flop (one-hot encoded)
+        },
+        "action": 0.5,  # I raise (bet fraction of 0.5)
+        "outcome": None  # Outcome not determined yet
+    },
+    # Pre-flop state 2
+    {
+        "state": {
+            "opponent_bankroll": 1000,  # Opponent's bankroll
+            "hands_that_beat_me": 0.3,  # 30% of hands beat my hand
+            "pot": 400,                 # Updated pot size after opponent raises
+            "my_bankroll": 1400,        # My bankroll after calling
+            "first_to_talk": 0,         # I am not first to act (0 for False)
+            "round_type": [1, 0, 0, 0]  # Pre-flop (one-hot encoded)
+        },
+        "action": 0.0,  # I have no action allowed (bet fraction of 0.0)
+        "outcome": None  # Outcome not determined yet
+    },
+    # Flop state 3 (both players go all-in)
+    {
+        "state": {
+            "opponent_bankroll": 1000,  # Opponent's bankroll
+            "hands_that_beat_me": 0.5,  # 50% of hands beat my hand
+            "pot": 2000,                # Updated pot size after all-in
+            "my_bankroll": 0,           # My bankroll after going all-in
+            "first_to_talk": 1,         # I am first to act (1 for True, 0 for False)
+            "round_type": [0, 1, 0, 0]  # Flop (one-hot encoded)
+        },
+        "action": 1.0,  # I go all-in (bet fraction of 1.0)
+        "outcome": {
+            "result": "win",            # Outcome of the hand
+            "money_won": 3000,          # Money won by me (1.5x the pot)
+            "potential_winnings": 2000  # Potential winnings if I had won
+        }
+    }
+]
+
