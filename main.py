@@ -28,7 +28,11 @@ args = parser.parse_args()
 class TemplateBot(Bot):
     def act(self, state, hand):
         print('asked to act')
+<<<<<<< HEAD
+        print('acting', state, hand, self.my_id))
+=======
         print('acting', type(state), hand, self.my_id)
+>>>>>>> 450468c93658fb90c1f179ba802dfde85fb195c3
         return {'type': 'call'}
 
     def opponent_action(self, action, player):
