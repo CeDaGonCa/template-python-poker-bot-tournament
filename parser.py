@@ -52,6 +52,12 @@ import numpy as np
 from tg.bot import Bot
 import time
 
+from tg.types import Card, Rank, Suit
+
+from treys import Deck, Evaluator, Card as TreysCard
+import random
+from types import SimpleNamespace
+
 parser = argparse.ArgumentParser(
     prog='Template bot',
     description='A Turing Games poker bot that always checks or calls, no matter what the target bet is (it never folds and it never raises)')
@@ -79,10 +85,13 @@ class TemplateBot(Bot):
         elif (state.round == "river"):
             round = [0, 0, 1]
 
-        strength = 0;
 
-        buffer = round + " , " + state.pot + " , " + state.dealer_position + " , " + state.players.last_round + " , " + state.players[1].stack + " , " + strength
+        strength = evaluate_hand_with_board(hand, state.cards)
 
+        buffer = round + " , " + state.pot + " , " + state.dealer_position + " , " + state.players.last_round + " , " + state.players[1].stack + " , " + round(strength, 32)
+        file = open("parsed.csv", "a")
+        file.write(buffer)
+        file.close()
 
         return {'type': 'call'}
 
@@ -102,3 +111,47 @@ if __name__ == "__main__":
 
 
 
+def convert_namespace_to_card(ns):
+    return SimpleNamespace(rank=ns.rank, suit=ns.suit)
+
+def convert_card_to_treys(card: SimpleNamespace) -> int:
+    """Converts a namespace Card object to Treys format."""
+    rank_str = {1: 'A', 11: 'J', 12: 'Q', 13: 'K'}.get(card.rank, str(card.rank))
+    suit_str = card.suit[0].lower()  # 'hearts' -> 'h', 'spades' -> 's', etc.
+    return TreysCard.new(rank_str + suit_str)
+
+def evaluate_hand_with_board(hole_cards, board_cards, simulations=10000):
+    """
+    Evaluates the current strength of a poker hand given the board.
+    Uses Monte Carlo simulations to estimate the winning probability against a random hand.
+    """
+    deck = Deck()
+    evaluator = Evaluator()
+    
+    # Convert namespace objects to Treys format
+    hole_cards = [convert_card_to_treys(convert_namespace_to_card(card)) for card in hole_cards]
+    board_cards = [convert_card_to_treys(convert_namespace_to_card(card)) for card in board_cards]
+    
+    # Remove used cards from the deck
+    for card in hole_cards + board_cards:
+        deck.cards.remove(card)
+    
+    win_count = 0
+    
+    for _ in range(simulations):
+        # Generate a random opponent hand
+        opponent_hand = deck.draw(2)
+        
+        # Complete the board if not fully revealed
+        remaining_community_cards = deck.draw(5 - len(board_cards))
+        full_board = board_cards + remaining_community_cards
+        
+        # Evaluate hands
+        my_score = evaluator.evaluate(full_board, hole_cards)
+        opponent_score = evaluator.evaluate(full_board, opponent_hand)
+        
+        if my_score < opponent_score:  # Lower score means a stronger hand
+            win_count += 1
+    
+    win_probability = win_count / simulations
+    return win_probability

@@ -1,9 +1,78 @@
 #!/usr/bin/env python3
 import asyncio
 import argparse
-
+import numpy as np
 from tg.bot import Bot
 import time
+from tg.types import Card, Rank, Suit
+from treys import Deck, Evaluator, Card as TreysCard
+import random
+from types import SimpleNamespace
+
+def convert_namespace_to_card(ns: SimpleNamespace) -> SimpleNamespace:
+    #Ensures that a namespace object has rank and suit attributes.
+    return SimpleNamespace(rank=ns.rank, suit=ns.suit)
+
+def convert_card_to_treys(card: SimpleNamespace) -> int:
+    #Converts a namespace Card object to Treys format.
+    rank_map = {1: 'A', 14: 'A', 11: 'J', 12: 'Q', 13: 'K'}  # Ensure Ace is 'A'
+    
+    # Ensure Ace is treated correctly
+    rank = 14 if card.rank == 1 else card.rank # Convert rank 1 to 14 for Treys
+    rank_str = rank_map.get(rank, str(rank))  # Convert other ranks normally
+   
+    suit_str = card.suit[0].lower()  # 'hearts' -> 'h', 'spades' -> 's', etc.
+    print(suit_str + rank_str)
+    return TreysCard.new(rank_str + suit_str)
+
+
+def evaluate_hand_with_board(hole_cards, board_cards, simulations=1000):
+    
+    #Evaluates the current strength of a poker hand given the board.
+    #Uses Monte Carlo simulations to estimate the winning probability against a random hand.
+    
+    # Convert namespace objects to Treys format
+    hole_cards = [convert_card_to_treys(convert_namespace_to_card(card)) for card in hole_cards]
+    board_cards = [convert_card_to_treys(convert_namespace_to_card(card)) for card in board_cards]
+    
+    win_count = 0
+    
+    for _ in range(simulations):
+        # Create a fresh copy of the deck for each simulation
+        deck = Deck()
+        deck.cards = [card for card in deck.cards if card not in board_cards]
+        deck.cards = [card for card in deck.cards if card not in hole_cards]
+        # remove from the deck the hole cards and the board cards
+        evaluator = Evaluator()
+        #print(len(board_cards))
+        new_cards = deck.draw(5 - len(board_cards))
+        board_cards.extend(new_cards)
+        #print("new cards:", new_cards)
+        #print("board cards:", board_cards)
+        #print(board_cards)
+        opponent_hand = deck.draw(2)
+        
+    
+        
+        # Evaluate hands
+        my_score = evaluator.evaluate(hole_cards, board_cards)
+        opponent_score = evaluator.evaluate(opponent_hand, board_cards)
+        
+        if my_score < opponent_score:  # Lower score means a stronger hand
+            win_count += 1
+    
+    win_probability = win_count / simulations
+    return win_probability
+
+def one_hot(state_round):
+    round = np.zeros(3)
+    if (state_round == "flop"):
+        round[0] = 1
+    elif (state_round == "turn"):
+        round[1] = 1
+    elif (state_round == "river"):
+        round[2] = 1
+    return round
 
 parser = argparse.ArgumentParser(
     prog='Template bot',
@@ -23,24 +92,36 @@ args = parser.parse_args()
 # Always call
 class TemplateBot(Bot):
     def act(self, state, hand):
-        print('asked to act')
-<<<<<<< HEAD
-        print('acting', state, hand, self.my_id))
-=======
-        print('acting', type(state), hand, self.my_id)
->>>>>>> 450468c93658fb90c1f179ba802dfde85fb195c3
+
+        strength = evaluate_hand_with_board(hand, state.cards, simulations=10000)
+
+        words = [one_hot(state.round), state.pot, state.dealer_position, state.players[1].stack, strength]
+        buffer = ', '.join(map(str, words)) + '\n'
+        file = open("parsed.csv", "a")
+        file.write(buffer)
+        file.close()
+
         return {'type': 'call'}
 
     def opponent_action(self, action, player):
-        print('opponent action?', action, player)
+        #print('opponent action?', action, player)
+        return
 
     def game_over(self, payouts):
-        print('game over', payouts)
+        #print('game over', payouts)
+        return
 
     def start_game(self, my_id):
         self.my_id = my_id
-        print('start game', my_id)
+        #print('start game', my_id)
+        return
 
 if __name__ == "__main__":
-    bot = TemplateBot(args.host, args.port, args.room, args.username)
-    asyncio.run(bot.start())
+    print(convert_namespace_to_card(SimpleNamespace(rank=1, suit='spades')))
+    print(type(convert_card_to_treys(Card(rank=1, suit='spades'))))
+    print(evaluate_hand_with_board([Card(rank=1, suit='spades'), Card(rank=1, suit='hearts')], []))
+
+
+#if __name__ == "__main__":
+ #   bot = TemplateBot(args.host, args.port, args.room, args.username)
+  #  asyncio.run(bot.start())
