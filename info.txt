@@ -8,6 +8,7 @@ first to talk (boolean)
 round (pre flop, flop, etc..) (one hot encoding)
 vector of previous actions of opponent. example : [0,0,0.2,0.5,1]
 
++ pot or -pot depending on win or loss
 
 
 

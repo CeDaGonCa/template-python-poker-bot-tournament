@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 import asyncio
 import argparse
-import numpy as npimport random
+from tg.LRBot import LRBot
 from tg.bot import Bot
 from treys import Evaluator
-import time
-from tg.types import Card, Rank, Suit
 from treys import Deck, Evaluator, Card as TreysCard
 import random
 from types import SimpleNamespace
@@ -97,11 +95,7 @@ args = parser.parse_args()
 class TemplateBot(Bot):
     def act(self, state, hand):
         print('asked to act')
-<<<<<<< HEAD
-        print('acting', state, hand, self.my_id))
-=======
         print('acting', type(state), hand, self.my_id)
->>>>>>> 450468c93658fb90c1f179ba802dfde85fb195c3
         return {'type': 'call'}
 
     def opponent_action(self, action, player):
@@ -203,6 +197,8 @@ if __name__ == "__main__":
         bot = RandomBot(args.host, args.port, args.room, "random")
     elif args.type == "greedy":
         bot = Greedy(args.host, args.port, args.room, "greedy")
+    elif args.type == "lr":
+        bot = LRBot(args.host, args.port, args.room, "lrbot")
     elif args.type == "insecure":
         bot = Insequre(args.host,args.port, args.room, "insecure")
     else:
